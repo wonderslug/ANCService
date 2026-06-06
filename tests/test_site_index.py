@@ -16,6 +16,7 @@ def test_install_button_present():
 def test_all_five_steps_present():
     html = _html()
     for marker in [
+        "Install the firmware",
         "Set WiFi",
         "Add to Home Assistant",
         "Pair your iPhone",
@@ -46,4 +47,4 @@ def test_ha_events_documented():
 
 def test_optional_content_collapsed_in_details():
     # why-nRF-Connect, encryption/adopt note, extra automations, etc.
-    assert _html().count("<details") >= 2
+    assert _html().count("<details") >= 5

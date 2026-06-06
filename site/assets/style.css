@@ -80,3 +80,4 @@ pre {
   background: color-mix(in srgb, currentColor 8%, transparent);
 }
 .help p { margin: 0.5rem 0; }
+.step .help { margin-top: 1rem; }
