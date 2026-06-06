@@ -31,7 +31,10 @@ ancs:
   name: "ANCService"
 
 wifi:
-  ap: {}                       # minimal fallback AP (captive-portal polish = spec 2)
+  ap:
+    ssid: "ANCService Setup"   # named, open AP; the captive portal serves the WiFi setup page
+
+captive_portal:                # WiFi-recovery fallback shown when the device can't join a network
 
 improv_serial:                 # WiFi creds over USB serial during web flash (NimBLE-safe)
 
