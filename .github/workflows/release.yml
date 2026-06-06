@@ -18,8 +18,8 @@ jobs:
           - chip: esp32-s3
           - chip: esp32-c3
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - run: pip install -r requirements-dev.txt
@@ -33,7 +33,7 @@ jobs:
           mkdir -p dist
           cp firmware/boards/.esphome/build/ancservice/.pioenvs/ancservice/firmware.factory.bin \
              dist/ancservice-${{ matrix.chip }}-${{ github.ref_name }}.bin
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: bin-${{ matrix.chip }}
           path: dist/*.bin
@@ -45,12 +45,12 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - run: pip install -r requirements-dev.txt
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: bin-*
           path: dist
@@ -71,14 +71,14 @@ jobs:
             --build esp32-c3=ancservice-esp32-c3-${{ github.ref_name }}.bin \
             --out site/manifest.json
       - name: Create GitHub Release with binaries
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: "ANCService ${{ github.ref_name }} (ancs ${{ steps.ref.outputs.ancs_ref }})"
           files: dist/*.bin
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
       - name: Deploy to Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
