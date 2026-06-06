@@ -1,0 +1,7 @@
+packages:
+  base: !include ../ancservice.yaml
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf

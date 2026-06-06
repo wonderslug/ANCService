@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Install ANCService</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="assets/style.css" />
+    <script
+      type="module"
+      src="https://unpkg.com/esp-web-tools@10.1.0/dist/web/install-button.js?module"
+    ></script>
+  </head>
+  <body>
+    <main>
+      <h1>ANCService</h1>
+      <p>
+        Turn a $5 ESP32 into an Apple Notification Center Service bridge. Plug the
+        board into this computer with a USB cable and click Install — the installer
+        also sets WiFi, shows logs, and links you into Home Assistant.
+      </p>
+
+      <esp-web-install-button manifest="manifest.json">
+        <button slot="activate">Install ANCService</button>
+        <span slot="unsupported">Your browser can't flash. Use desktop Chrome or Edge.</span>
+        <span slot="not-allowed">Open this page over HTTPS to flash.</span>
+      </esp-web-install-button>
+
+      <esp-web-install-button manifest="manifest.json" erase-first>
+        <button slot="activate" class="erase">Erase flash &amp; install</button>
+        <span slot="unsupported"></span>
+        <span slot="not-allowed"></span>
+      </esp-web-install-button>
+
+      <p class="hint">
+        Normal install keeps saved WiFi and iPhone pairings. Use
+        <em>erase flash &amp; install</em> for a clean wipe (recovery, or re-pairing
+        from scratch).
+      </p>
+
+      <details class="help">
+        <summary>Trouble flashing? (&ldquo;Failed to initialize&rdquo;)</summary>
+        <ol>
+          <li>Use desktop <strong>Chrome</strong> or <strong>Edge</strong> &mdash; not Safari, Firefox, or a phone.</li>
+          <li>Use a <strong>data</strong> USB cable, and close anything else using the board (serial monitors, the ESPHome/Arduino IDE, other browser tabs).</li>
+          <li>If the port picker shows more than one device, choose the one that matches your board&rsquo;s USB chip &mdash; e.g. <code>cu.SLAB_USBtoUART</code> (CP2102) is usually more reliable than a generic <code>usbserial</code> adapter.</li>
+          <li>Still failing? Your board&rsquo;s auto-reset may not trigger from the browser. <strong>Hold BOOT</strong>, click Install, pick the port, and <strong>keep holding BOOT through &ldquo;Connecting&hellip;&rdquo;</strong> until it starts writing &mdash; then release.</li>
+          <li>If even that fails: while it&rsquo;s trying, do this on the board &mdash; hold <strong>BOOT</strong>, tap <strong>RESET/EN</strong>, release RESET, release BOOT. (Boards with native-USB chips like the ESP32-S3/C3 don&rsquo;t need this.)</li>
+        </ol>
+      </details>
+
+      <p class="links">
+        <a href="https://github.com/wonderslug/ANCService/releases">Releases &amp; manual .bin download</a>
+        ·
+        <a href="https://github.com/wonderslug/esphome-ancs/blob/master/docs/pairing.md">Pairing guide</a>
+      </p>
+    </main>
+  </body>
+</html>

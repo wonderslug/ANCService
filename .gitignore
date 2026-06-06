@@ -1,0 +1,22 @@
+# ESPHome build artifacts
+.esphome/
+*.bin
+secrets.yaml
+# ESPHome drops a boilerplate .gitignore in whatever dir it compiles
+firmware/boards/.gitignore
+firmware/.gitignore
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# Local dev installer output
+site/dev/
+
+# Local TLS certs (mkcert) for `make https`
+.dev-certs/
+
+# Brainstorming/spec/plan docs kept local only (not tracked)
+docs/superpowers/

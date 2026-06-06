@@ -1,0 +1,84 @@
+name: Release
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write   # create releases
+  pages: write      # deploy pages
+  id-token: write   # pages OIDC
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - chip: esp32
+          - chip: esp32-s3
+          - chip: esp32-c3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements-dev.txt
+      - name: Resolve pinned ancs_ref
+        id: ref
+        run: echo "ancs_ref=$(grep -E '^\s+ancs_ref:' firmware/ancservice.yaml | head -1 | sed -E 's/.*ancs_ref:\s*\"?([^\"]+)\"?.*/\1/')" >> "$GITHUB_OUTPUT"
+      - name: Compile
+        run: esphome -s ancs_ref ${{ steps.ref.outputs.ancs_ref }} compile firmware/boards/${{ matrix.chip }}.yaml
+      - name: Stage binary
+        run: |
+          mkdir -p dist
+          cp firmware/boards/.esphome/build/ancservice/.pioenvs/ancservice/firmware.factory.bin \
+             dist/ancservice-${{ matrix.chip }}-${{ github.ref_name }}.bin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.chip }}
+          path: dist/*.bin
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements-dev.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bin-*
+          path: dist
+          merge-multiple: true
+      - name: Resolve pinned ancs_ref
+        id: ref
+        run: echo "ancs_ref=$(grep -E '^\s+ancs_ref:' firmware/ancservice.yaml | head -1 | sed -E 's/.*ancs_ref:\s*\"?([^\"]+)\"?.*/\1/')" >> "$GITHUB_OUTPUT"
+      - name: Generate stable manifest
+        run: |
+          python scripts/gen_manifest.py \
+            --version "${{ github.ref_name }}" \
+            --ancs-ref "${{ steps.ref.outputs.ancs_ref }}" \
+            --mode stable \
+            --repo "${{ github.repository }}" \
+            --tag "${{ github.ref_name }}" \
+            --build esp32=ancservice-esp32-${{ github.ref_name }}.bin \
+            --build esp32-s3=ancservice-esp32-s3-${{ github.ref_name }}.bin \
+            --build esp32-c3=ancservice-esp32-c3-${{ github.ref_name }}.bin \
+            --out site/manifest.json
+      - name: Create GitHub Release with binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "ANCService ${{ github.ref_name }} (ancs ${{ steps.ref.outputs.ancs_ref }})"
+          files: dist/*.bin
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

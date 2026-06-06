@@ -1,0 +1,45 @@
+# ANCService — canonical firmware config.
+# Standalone-compilable (default board esp32dev) so Home Assistant "adopt" works.
+# Build-time overrides: -s ancs_ref <tag|branch>   (board set by boards/<chip>.yaml wrappers)
+substitutions:
+  ancs_ref: "master"          # overridden by CI to the pinned esphome-ancs release tag
+  device_name: "ancservice"
+
+esphome:
+  name: "${device_name}"
+  name_add_mac_suffix: true
+  project:
+    name: "wonderslug.ancservice"
+    version: "v1"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/wonderslug/esphome-ancs
+      ref: "${ancs_ref}"
+    components: [ancs]
+
+logger:
+
+ancs:
+  id: my_ancs
+  name: "ANCService"
+
+wifi:
+  ap: {}                       # minimal fallback AP (captive-portal polish = spec 2)
+
+improv_serial:                 # WiFi creds over USB serial during web flash (NimBLE-safe)
+
+api:                           # keyless (see spec §4.1); adoption regenerates a per-device key
+
+ota:
+  - platform: esphome
+
+dashboard_import:
+  package_import_url: github://wonderslug/ANCService/firmware/ancservice.yaml@main
+  import_full_config: false

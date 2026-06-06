@@ -1,0 +1,41 @@
+name: Component Release
+on:
+  repository_dispatch:
+    types: [component-release]
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need tags for bump
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate payload
+        run: |
+          test -n "${{ github.event.client_payload.tag }}" || { echo "missing client_payload.tag"; exit 1; }
+      - name: Bump pinned ancs_ref
+        run: |
+          NEW_REF="${{ github.event.client_payload.tag }}"
+          sed -i -E "s/(^\s+ancs_ref:\s*\")[^\"]+(\")/\1${NEW_REF}\2/" firmware/ancservice.yaml
+          grep -E '^\s+ancs_ref:' firmware/ancservice.yaml
+      - name: Compute next patch version
+        id: ver
+        run: |
+          LATEST=$(git tag --list 'v*' --sort=-v:refname | head -1)
+          NEXT=$(python scripts/bump_version.py "$LATEST")
+          echo "next=$NEXT" >> "$GITHUB_OUTPUT"
+      - name: Commit, tag, push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add firmware/ancservice.yaml
+          git commit -m "chore: bump ancs_ref to ${{ github.event.client_payload.tag }} (${{ steps.ver.outputs.next }})"
+          git tag "${{ steps.ver.outputs.next }}"
+          git push origin HEAD:main
+          git push origin "${{ steps.ver.outputs.next }}"
