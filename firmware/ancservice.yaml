@@ -29,9 +29,71 @@ logger:
 ancs:
   id: my_ancs
   name: "ANCService"
+  auto_fetch_attributes: true
+  fetch_attributes: [app_id, title, subtitle, message, date]
+  on_notification_attributes:
+    - logger.log:
+        format: "ATTRS     uid=%u  dev=%-16s  cat=%-16s  app=%s  title=%s  sub=%s  msg=%s  date=%s"
+        tag: "ancs.notification_attrs"
+        args:
+          - uid
+          - device_name.c_str()
+          - category.c_str()
+          - app_id.c_str()
+          - title.c_str()
+          - subtitle.c_str()
+          - message.c_str()
+          - date.c_str()
+    - if:
+        condition:
+          lambda: 'return category == "incoming_call";'
+        then:
+          - homeassistant.event:
+              event: esphome.ancs_incoming_call
+              data:
+                uid: !lambda 'return std::to_string(uid);'
+                caller: !lambda 'return title;'
+                app_id: !lambda 'return app_id;'
+                date: !lambda 'return date;'
+                device_name: !lambda 'return std::string(App.get_name());'
+                iphone_name: !lambda 'return device_name;'
+        else:
+          - homeassistant.event:
+              event: esphome.ancs_notification
+              data:
+                uid: !lambda 'return std::to_string(uid);'
+                category: !lambda 'return category;'
+                app_id: !lambda 'return app_id;'
+                title: !lambda 'return title;'
+                subtitle: !lambda 'return subtitle;'
+                message: !lambda 'return message;'
+                date: !lambda 'return date;'
+                device_name: !lambda 'return std::string(App.get_name());'
+                iphone_name: !lambda 'return device_name;'
+  on_notification_removed:
+    - logger.log:
+        format: "REMOVED   uid=%u  dev=%-16s  cat=%-16s"
+        tag: "ancs.notification_removed"
+        args:
+          - uid
+          - device_name.c_str()
+          - category.c_str()
+    - if:
+        condition:
+          lambda: 'return category == "incoming_call";'
+        then:
+          - homeassistant.event:
+              event: esphome.ancs_call_ended
+              data:
+                uid: !lambda 'return std::to_string(uid);'
+                device_name: !lambda 'return std::string(App.get_name());'
+                iphone_name: !lambda 'return device_name;'
 
 wifi:
-  ap: {}                       # minimal fallback AP (captive-portal polish = spec 2)
+  ap:
+    ssid: "ANCService Setup"   # named, open AP; the captive portal serves the WiFi setup page
+
+captive_portal:                # WiFi-recovery fallback shown when the device can't join a network
 
 improv_serial:                 # WiFi creds over USB serial during web flash (NimBLE-safe)
 

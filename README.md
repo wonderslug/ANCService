@@ -15,8 +15,11 @@ add per-device API encryption, use ESPHome's **adopt / Take Control** flow.
 
 ## Pair your iPhone
 
-ANCS pairing requires nRF Connect — see the
-[pairing guide](https://github.com/wonderslug/esphome-ancs/blob/master/docs/pairing.md).
+Pairing instructions are built into the web installer
+(**https://wonderslug.github.io/ANCService/**, step 4). It uses nRF Connect once;
+after that the iPhone reconnects on its own. The library's
+[deep-dive pairing guide](https://github.com/wonderslug/esphome-ancs/blob/master/docs/pairing.md)
+covers the BLE/iOS details.
 
 ## Local development
 

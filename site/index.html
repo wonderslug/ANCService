@@ -14,45 +14,162 @@
   <body>
     <main>
       <h1>ANCService</h1>
-      <p>
-        Turn a $5 ESP32 into an Apple Notification Center Service bridge. Plug the
-        board into this computer with a USB cable and click Install — the installer
-        also sets WiFi, shows logs, and links you into Home Assistant.
+      <p class="pitch">
+        Turn a $5 ESP32 into an Apple Notification Center Service bridge — your iPhone's
+        notifications become events in Home Assistant. Follow the steps below; each takes
+        about a minute, and you're done by the bottom.
       </p>
 
-      <esp-web-install-button manifest="manifest.json">
-        <button slot="activate">Install ANCService</button>
-        <span slot="unsupported">Your browser can't flash. Use desktop Chrome or Edge.</span>
-        <span slot="not-allowed">Open this page over HTTPS to flash.</span>
-      </esp-web-install-button>
+      <section class="step">
+        <h2><span class="num">1</span> Install the firmware</h2>
+        <p>Plug the board into this computer with a USB cable, then click Install.</p>
+        <esp-web-install-button manifest="manifest.json">
+          <button slot="activate">Install ANCService</button>
+          <span slot="unsupported">Your browser can't flash. Use desktop Chrome or Edge.</span>
+          <span slot="not-allowed">Open this page over HTTPS to flash.</span>
+        </esp-web-install-button>
+        <esp-web-install-button manifest="manifest.json" erase-first>
+          <button slot="activate" class="erase">Erase flash &amp; install</button>
+          <span slot="unsupported"></span>
+          <span slot="not-allowed"></span>
+        </esp-web-install-button>
+        <p class="hint">
+          Normal install keeps saved WiFi and iPhone pairings. Use
+          <em>erase flash &amp; install</em> for a clean wipe (recovery, or re-pairing from scratch).
+        </p>
+        <details class="help">
+          <summary>Trouble flashing? (&ldquo;Failed to initialize&rdquo;)</summary>
+          <ol>
+            <li>Use desktop <strong>Chrome</strong> or <strong>Edge</strong> &mdash; not Safari, Firefox, or a phone.</li>
+            <li>Use a <strong>data</strong> USB cable, and close anything else using the board (serial monitors, other browser tabs).</li>
+            <li>If the port picker shows more than one device, choose the one matching your board&rsquo;s USB chip &mdash; e.g. <code>cu.SLAB_USBtoUART</code> (CP2102).</li>
+            <li>Still failing? <strong>Hold BOOT</strong>, click Install, pick the port, and keep holding BOOT through &ldquo;Connecting&hellip;&rdquo; until it starts writing &mdash; then release.</li>
+          </ol>
+        </details>
+      </section>
 
-      <esp-web-install-button manifest="manifest.json" erase-first>
-        <button slot="activate" class="erase">Erase flash &amp; install</button>
-        <span slot="unsupported"></span>
-        <span slot="not-allowed"></span>
-      </esp-web-install-button>
+      <section class="step">
+        <h2><span class="num">2</span> Set WiFi</h2>
+        <p>
+          During install, the wizard asks for your WiFi network and password and sends them
+          to the device. That's it — no app needed.
+        </p>
+        <details class="help">
+          <summary>Need to change WiFi later, or it didn't connect?</summary>
+          <p>
+            If the device can't join your network, it creates its own WiFi network called
+            <strong>&ldquo;ANCService Setup&rdquo;</strong>. Join it from your phone or laptop and a setup page
+            pops up automatically — pick your network, enter the password, and the device
+            reboots onto your WiFi.
+          </p>
+        </details>
+      </section>
 
-      <p class="hint">
-        Normal install keeps saved WiFi and iPhone pairings. Use
-        <em>erase flash &amp; install</em> for a clean wipe (recovery, or re-pairing
-        from scratch).
-      </p>
+      <section class="step">
+        <h2><span class="num">3</span> Add to Home Assistant</h2>
+        <p>
+          After flashing, click <strong>Add to Home Assistant</strong> in the installer dialog. Home
+          Assistant discovers the device and adds it in a couple of clicks.
+        </p>
+        <details class="help">
+          <summary>About encryption (optional)</summary>
+          <p>
+            The device joins Home Assistant <strong>without an encryption key</strong> — simplest to set
+            up and fine for a trusted home network. For a per-device encrypted connection, use
+            ESPHome's <strong>Take Control / adopt</strong> flow in the ESPHome dashboard, which regenerates
+            the firmware with a unique key and updates it over the air.
+          </p>
+        </details>
+      </section>
 
-      <details class="help">
-        <summary>Trouble flashing? (&ldquo;Failed to initialize&rdquo;)</summary>
-        <ol>
-          <li>Use desktop <strong>Chrome</strong> or <strong>Edge</strong> &mdash; not Safari, Firefox, or a phone.</li>
-          <li>Use a <strong>data</strong> USB cable, and close anything else using the board (serial monitors, the ESPHome/Arduino IDE, other browser tabs).</li>
-          <li>If the port picker shows more than one device, choose the one that matches your board&rsquo;s USB chip &mdash; e.g. <code>cu.SLAB_USBtoUART</code> (CP2102) is usually more reliable than a generic <code>usbserial</code> adapter.</li>
-          <li>Still failing? Your board&rsquo;s auto-reset may not trigger from the browser. <strong>Hold BOOT</strong>, click Install, pick the port, and <strong>keep holding BOOT through &ldquo;Connecting&hellip;&rdquo;</strong> until it starts writing &mdash; then release.</li>
-          <li>If even that fails: while it&rsquo;s trying, do this on the board &mdash; hold <strong>BOOT</strong>, tap <strong>RESET/EN</strong>, release RESET, release BOOT. (Boards with native-USB chips like the ESP32-S3/C3 don&rsquo;t need this.)</li>
+      <section class="step">
+        <h2><span class="num">4</span> Pair your iPhone</h2>
+        <p>
+          Apple no longer lists custom accessories in Settings &rarr; Bluetooth, so you pair
+          <strong>once</strong> using the free <strong>nRF Connect for Mobile</strong> app. After that your iPhone
+          reconnects on its own.
+        </p>
+        <ol class="pair">
+          <li>Install <a href="https://apps.apple.com/app/nrf-connect-for-mobile/id1054362403">nRF Connect for Mobile</a> (free) and make sure Bluetooth is on.</li>
+          <li>Open nRF Connect &rarr; <strong>SCANNER</strong> &rarr; tap <strong>SCAN</strong>.</li>
+          <li>Find <strong>ANCService</strong> in the list and tap <strong>CONNECT</strong>.</li>
+          <li>Tap <strong>Pair</strong> on the iPhone dialog that appears.</li>
+          <li>Tap <strong>Allow</strong> on the &ldquo;receive notifications&rdquo; dialog — this grants access.</li>
+          <li>Close nRF Connect. Done — the bond is stored by iOS and reconnects automatically.</li>
         </ol>
-      </details>
+        <details class="help">
+          <summary>Why do I need a separate app?</summary>
+          <p>
+            Around iOS 16, Apple stopped showing custom Bluetooth accessories in Settings &rarr;
+            Bluetooth. nRF Connect just opens a connection so iOS shows its standard pairing
+            dialog — the same one you'd normally tap in Settings. You only need it for this
+            one-time pairing; it's never needed again.
+          </p>
+        </details>
+        <details class="help">
+          <summary>Pairing didn't take?</summary>
+          <p>
+            In iOS <strong>Settings &rarr; Bluetooth</strong>, tap <strong>Forget This Device</strong> if ANCService is listed,
+            then repeat the steps above from your scan.
+          </p>
+        </details>
+      </section>
+
+      <section class="step">
+        <h2><span class="num">5</span> Use it in Home Assistant</h2>
+        <p>Your iPhone's notifications now arrive in Home Assistant as events you can automate on:</p>
+        <table class="events">
+          <thead>
+            <tr><th>Event</th><th>Fires when</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>esphome.ancs_incoming_call</code></td><td>an incoming call arrives</td></tr>
+            <tr><td><code>esphome.ancs_notification</code></td><td>any other notification arrives</td></tr>
+            <tr><td><code>esphome.ancs_call_ended</code></td><td>a call is answered or declined</td></tr>
+          </tbody>
+        </table>
+        <p>Example — flash a light when a call comes in (Settings &rarr; Automations &rarr; Edit as YAML):</p>
+        <pre><code>trigger:
+  - platform: event
+    event_type: esphome.ancs_incoming_call
+action:
+  - service: light.turn_on
+    target:
+      entity_id: light.YOUR_LIGHT
+    data:
+      flash: long</code></pre>
+        <details class="help">
+          <summary>More automation examples</summary>
+          <p>Stop flashing when the call ends:</p>
+          <pre><code>trigger:
+  - platform: event
+    event_type: esphome.ancs_call_ended
+action:
+  - service: light.turn_off
+    target:
+      entity_id: light.YOUR_LIGHT</code></pre>
+          <p>Announce the caller out loud:</p>
+          <pre><code>trigger:
+  - platform: event
+    event_type: esphome.ancs_incoming_call
+action:
+  - service: tts.cloud_say
+    data:
+      entity_id: media_player.YOUR_SPEAKER
+      message: "Call from {{ trigger.event.data.caller }}"</code></pre>
+          <p>Only react to a specific app (e.g. Messages) — match on <code>app_id</code>:</p>
+          <pre><code>trigger:
+  - platform: event
+    event_type: esphome.ancs_notification
+    event_data:
+      app_id: com.apple.MobileSMS</code></pre>
+        </details>
+      </section>
 
       <p class="links">
         <a href="https://github.com/wonderslug/ANCService/releases">Releases &amp; manual .bin download</a>
         ·
-        <a href="https://github.com/wonderslug/esphome-ancs/blob/master/docs/pairing.md">Pairing guide</a>
+        <a href="https://github.com/wonderslug/ANCService">Project on GitHub</a>
       </p>
     </main>
   </body>
