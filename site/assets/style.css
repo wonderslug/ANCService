@@ -36,3 +36,47 @@ button[slot="activate"].erase {
 .help ol { margin-top: 0.75rem; line-height: 1.6; }
 .help code { font-size: 0.85em; }
 .links { margin-top: 2rem; font-size: 0.9rem; }
+.pitch { margin-bottom: 1.5rem; }
+.step {
+  text-align: left;
+  max-width: 32rem;
+  margin: 2.5rem auto 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+}
+.step h2 {
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.step .num {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  background: #0b8043;
+  color: #fff;
+  font-size: 1rem;
+}
+.step esp-web-install-button { text-align: center; }
+.step .help summary { text-align: left; }
+ol.pair { line-height: 1.7; padding-left: 1.2rem; }
+table.events { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+table.events th, table.events td {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+pre {
+  text-align: left;
+  overflow-x: auto;
+  padding: 0.8rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+.help p { margin: 0.5rem 0; }
