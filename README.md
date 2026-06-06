@@ -63,5 +63,15 @@ make monitor SERIAL_PORT=/dev/cu.SLAB_USBtoUART        # view serial logs (11520
 ## One-time maintainer setup
 
 1. ANCService repo → Settings → Pages → Source: **GitHub Actions**.
-2. Create a fine-grained PAT with `contents: write` on `wonderslug/ANCService`.
-3. Add it as secret `ANCSERVICE_DISPATCH_TOKEN` in the `esphome-ancs` repo.
+2. Allow the `github-pages` environment to deploy from **tags** — the release
+   workflow runs on `v*` tags, but the auto-created environment defaults to the
+   default branch only. Either clear its deployment-branch policy:
+   ```bash
+   echo '{"deployment_branch_policy":null}' | \
+     gh api -X PUT repos/wonderslug/ANCService/environments/github-pages --input -
+   ```
+   or in Settings → Environments → `github-pages`, set "Deployment branches and
+   tags" to allow `v*`. (Symptom if skipped: publish job fails with
+   *"Tag … is not allowed to deploy to github-pages due to environment protection rules."*)
+3. Create a fine-grained PAT with `contents: write` on `wonderslug/ANCService`.
+4. Add it as secret `ANCSERVICE_DISPATCH_TOKEN` in the `esphome-ancs` repo.
