@@ -24,13 +24,13 @@ component for the quick-start crowd. ANCService is the batteries-included layer 
 | # | Sub-project | Status | Spec |
 |---|---|---|---|
 | 1 | **Distribution core** — reproducible firmware build, CI, tag-driven GitHub Release + Pages web installer, auto stable rebuilds on `esphome-ancs` release, local dev tooling | ✅ Shipped (`v0.1.0`) | `docs/superpowers/specs/2026-06-05-distribution-core-design.md` |
-| 2 | **Onboarding & provisioning** — captive-portal WiFi fallback, log access, polished Add-to-Home-Assistant handoff | ⏭️ Next | _tbd_ |
+| 2 | **Onboarding & provisioning** — captive-portal WiFi fallback, baseline HA events, single-page guided quickstart (install → WiFi → Add to HA → pair → use) | 🛠️ Spec written | `docs/superpowers/specs/2026-06-05-onboarding-provisioning-design.md` |
 | 3 | **Ready-to-go entities** — curated, pre-wired sensors and buttons for the ANCS services | ◻️ Planned | _tbd_ |
 | 4 | **Event delivery** — MQTT topic publication and/or outbound webhooks beyond HA API events | ◻️ Planned | _tbd_ |
 | 5 | **Configuration web interface** — on-device settings UI | ◻️ Planned | _tbd_ |
 | 6 | **Notification display ("repeater") screens** — stylized per-phone notification/call display addressable by direct URL | ◻️ Future (architectural constraint to keep in mind now) | _tbd_ |
 
-Legend: ✅ shipped · ⏭️ next · ◻️ planned
+Legend: ✅ shipped · 🛠️ in progress · ⏭️ next · ◻️ planned
 
 ## #1 Distribution core — what shipped
 
