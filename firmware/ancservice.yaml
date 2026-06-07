@@ -2,7 +2,7 @@
 # Standalone-compilable (default board esp32dev) so Home Assistant "adopt" works.
 # Build-time overrides: -s ancs_ref <tag|branch>   (board set by boards/<chip>.yaml wrappers)
 substitutions:
-  ancs_ref: "v1.1.1"          # pinned esphome-ancs release; auto-bumped on component release
+  ancs_ref: "v1.1.2"          # pinned esphome-ancs release; auto-bumped on component release
   device_name: "ancservice"
 
 esphome:
