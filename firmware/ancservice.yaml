@@ -62,6 +62,21 @@ ancs:
                 date: !lambda 'return date;'
                 device_name: !lambda 'return std::string(App.get_name());'
                 iphone_name: !lambda 'return device_name;'
+          - if:
+              condition:
+                lambda: 'return id(webhooks_enabled).state && !id(webhook_url_incoming_call).state.empty();'
+              then:
+                - http_request.post:
+                    url: !lambda 'return id(webhook_url_incoming_call).state;'
+                    request_headers:
+                      Content-Type: application/json
+                    json:
+                      uid: !lambda 'return std::to_string(uid);'
+                      caller: !lambda 'return title;'
+                      app_id: !lambda 'return app_id;'
+                      date: !lambda 'return date;'
+                      device_name: !lambda 'return std::string(App.get_name());'
+                      iphone_name: !lambda 'return device_name;'
         else:
           - homeassistant.event:
               event: esphome.ancs_notification
@@ -75,6 +90,24 @@ ancs:
                 date: !lambda 'return date;'
                 device_name: !lambda 'return std::string(App.get_name());'
                 iphone_name: !lambda 'return device_name;'
+          - if:
+              condition:
+                lambda: 'return id(webhooks_enabled).state && !id(webhook_url_notification).state.empty();'
+              then:
+                - http_request.post:
+                    url: !lambda 'return id(webhook_url_notification).state;'
+                    request_headers:
+                      Content-Type: application/json
+                    json:
+                      uid: !lambda 'return std::to_string(uid);'
+                      category: !lambda 'return category;'
+                      app_id: !lambda 'return app_id;'
+                      title: !lambda 'return title;'
+                      subtitle: !lambda 'return subtitle;'
+                      message: !lambda 'return message;'
+                      date: !lambda 'return date;'
+                      device_name: !lambda 'return std::string(App.get_name());'
+                      iphone_name: !lambda 'return device_name;'
   on_notification_removed:
     - logger.log:
         format: "REMOVED   uid=%u  dev=%-16s  cat=%-16s"
