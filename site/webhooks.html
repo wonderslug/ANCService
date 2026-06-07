@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Webhook Delivery — ANCService</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Webhook Delivery</h1>
+      <p class="pitch">
+        Send your iPhone's notification and call events directly to any service that
+        accepts a JSON POST — no Home Assistant required. Here's how it works, what
+        the payloads look like, and where to send them.
+      </p>
+
+      <section class="step">
+        <h2>What &amp; why</h2>
+        <p>
+          ANCService already delivers notification and call events to Home Assistant
+          as <code>homeassistant.event</code> actions. <strong>Webhooks</strong> are a
+          second, parallel delivery path: the device sends the same event data as a
+          JSON <code>POST</code> request straight to a URL you choose — to a
+          self-hosted automation tool, a notification relay like
+          <a href="https://ntfy.sh/">ntfy.sh</a>, or a custom receiver. Use webhooks if
+          you don't run Home Assistant, or want to feed notification data into
+          something else entirely. Both delivery paths can run side by side.
+        </p>
+      </section>
+
+      <section class="step">
+        <h2>How to configure</h2>
+        <p>
+          Webhook delivery is off by default and entirely optional. You'll find the
+          controls grouped under <strong>Webhooks</strong> — on the device's local web
+          page (browse to its IP address) and under <strong>Configuration</strong> in
+          Home Assistant:
+        </p>
+        <ul>
+          <li><strong>Webhooks Enabled</strong> — a master switch. Nothing is sent while it's off, regardless of which URLs are set.</li>
+          <li><strong>Notification Webhook URL</strong> — where to POST regular notifications.</li>
+          <li><strong>Incoming Call Webhook URL</strong> — where to POST incoming-call events.</li>
+          <li><strong>Call Ended Webhook URL</strong> — where to POST call-ended events.</li>
+        </ul>
+        <p>
+          Each URL is independent and optional — leave one blank and that event type
+          simply won't be sent, even with the master switch on. Set just the one(s)
+          you need.
+        </p>
+      </section>
+
+      <section class="step">
+        <h2>Payload reference</h2>
+        <p>
+          Each webhook sends a JSON body with <code>Content-Type: application/json</code>,
+          mirroring the fields sent to Home Assistant for the same event:
+        </p>
+        <table class="events">
+          <thead>
+            <tr><th>Webhook</th><th>Fields</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Notification Webhook URL</td>
+              <td><code>uid</code>, <code>category</code>, <code>app_id</code>, <code>title</code>, <code>subtitle</code>, <code>message</code>, <code>date</code>, <code>device_name</code>, <code>iphone_name</code></td>
+            </tr>
+            <tr>
+              <td>Incoming Call Webhook URL</td>
+              <td><code>uid</code>, <code>caller</code>, <code>app_id</code>, <code>date</code>, <code>device_name</code>, <code>iphone_name</code></td>
+            </tr>
+            <tr>
+              <td>Call Ended Webhook URL</td>
+              <td><code>uid</code>, <code>device_name</code>, <code>iphone_name</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Example — an incoming-call POST body:</p>
+        <pre><code>{
+  "uid": "1234",
+  "caller": "Jane Appleseed",
+  "app_id": "com.apple.mobilephone",
+  "date": "2026-06-07T14:32:00Z",
+  "device_name": "ancservice-a1b2c3",
+  "iphone_name": "Jane's iPhone"
+}</code></pre>
+        <details class="help">
+          <summary>Example — a regular notification POST body</summary>
+          <pre><code>{
+  "uid": "5678",
+  "category": "other",
+  "app_id": "com.apple.MobileSMS",
+  "title": "Jane Appleseed",
+  "subtitle": "",
+  "message": "Running 5 minutes late!",
+  "date": "2026-06-07T14:35:00Z",
+  "device_name": "ancservice-a1b2c3",
+  "iphone_name": "Jane's iPhone"
+}</code></pre>
+        </details>
+        <details class="help">
+          <summary>Example — a call-ended POST body</summary>
+          <pre><code>{
+  "uid": "1234",
+  "device_name": "ancservice-a1b2c3",
+  "iphone_name": "Jane's iPhone"
+}</code></pre>
+        </details>
+      </section>
+
+      <section class="step">
+        <h2>Where to send it</h2>
+        <p>Any URL that accepts a JSON <code>POST</code> works. A few starting points:</p>
+        <ul>
+          <li><a href="https://ntfy.sh/">ntfy.sh</a> — free push notifications to your phone or desktop; POST straight to a topic URL.</li>
+          <li><a href="https://webhook.site/">webhook.site</a> or <a href="https://requestbin.com/">RequestBin</a> — see exactly what arrives, great for testing before wiring up the real thing.</li>
+          <li>Your own automation tool (Node-RED, n8n, Home Assistant's <code>webhook</code> trigger, etc.) — anything with an HTTP-accessible endpoint.</li>
+        </ul>
+        <p>
+          Need authentication? There's no separate header field in v1 — embed a token
+          directly in the URL as a query parameter (e.g.
+          <code>https://example.com/hook?token=secret</code>), which ntfy.sh, Discord,
+          and most generic receivers accept.
+        </p>
+      </section>
+
+      <section class="step">
+        <h2>Troubleshooting</h2>
+        <p>Nothing arriving? Work through this checklist:</p>
+        <ol>
+          <li>Is <strong>Webhooks Enabled</strong> switched on?</li>
+          <li>Is the URL for that specific event type set (and spelled correctly, including <code>https://</code> or <code>http://</code>)?</li>
+          <li>
+            Check the device logs (ESPHome dashboard &rarr; device &rarr; <strong>Logs</strong>,
+            or the local web page's log stream) for <code>http_request</code> entries —
+            failed deliveries (timeouts, DNS errors, non-2xx responses) are logged there.
+          </li>
+          <li>Try pointing the URL at <a href="https://webhook.site/">webhook.site</a> first to confirm the device can reach the internet and is sending what you expect.</li>
+        </ol>
+      </section>
+
+      <p class="links">
+        <a href="index.html">&larr; Back to the quickstart</a>
+      </p>
+    </main>
+  </body>
+</html>
