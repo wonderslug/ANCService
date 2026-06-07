@@ -126,6 +126,18 @@ ancs:
                 uid: !lambda 'return std::to_string(uid);'
                 device_name: !lambda 'return std::string(App.get_name());'
                 iphone_name: !lambda 'return device_name;'
+          - if:
+              condition:
+                lambda: 'return id(webhooks_enabled).state && !id(webhook_url_call_ended).state.empty();'
+              then:
+                - http_request.post:
+                    url: !lambda 'return id(webhook_url_call_ended).state;'
+                    request_headers:
+                      Content-Type: application/json
+                    json:
+                      uid: !lambda 'return std::to_string(uid);'
+                      device_name: !lambda 'return std::string(App.get_name());'
+                      iphone_name: !lambda 'return device_name;'
 
 web_server:                    # local device page (shares web_server_base with captive_portal)
   version: 3
