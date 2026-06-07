@@ -105,6 +105,50 @@ web_server:                    # local device page (shares web_server_base with 
       name: "Actions"
       sorting_weight: 30
 
+binary_sensor:                 # live connection/call state, curated for at-a-glance HA visibility
+  - platform: ancs
+    ancs_id: my_ancs
+    connected:
+      name: "iPhone Connected"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 10
+    call_active:
+      name: "Call Active"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 20
+
+text_sensor:                   # last-notification text + device identity, curated for HA
+  - platform: ancs
+    ancs_id: my_ancs
+    last_title:
+      name: "Last Notification"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 30
+    last_message:
+      name: "Last Message"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 40
+    last_caller:
+      name: "Last Caller"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 50
+    last_app_id:
+      name: "Last App ID"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 60
+    advertised_name:
+      name: "Advertised Name"
+      entity_category: diagnostic
+      web_server:
+        sorting_group_id: sg_device   # joined by name_suffix (text entity) in the next commit
+        sorting_weight: 10
+
 wifi:
   ap:
     ssid: "ANCService Setup"   # named, open AP; the captive portal serves the WiFi setup page
