@@ -148,6 +148,14 @@ text_sensor:                   # last-notification text + device identity, curat
       web_server:
         sorting_group_id: sg_device   # joined by name_suffix (text entity) below
         sorting_weight: 10
+  - platform: template
+    name: "esphome-ancs Version"
+    entity_category: diagnostic
+    icon: "mdi:tag-outline"
+    lambda: 'return std::string("${ancs_ref}");'   # ${ancs_ref} resolves at compile time to the pinned component release
+    web_server:
+      sorting_group_id: sg_device
+      sorting_weight: 15
 
 text:                          # user-editable BLE name suffix (see ancs: comment above)
   - platform: ancs
