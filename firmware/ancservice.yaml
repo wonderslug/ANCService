@@ -92,6 +92,98 @@ ancs:
                 device_name: !lambda 'return std::string(App.get_name());'
                 iphone_name: !lambda 'return device_name;'
 
+web_server:                    # local device page (shares web_server_base with captive_portal)
+  version: 3
+  sorting_groups:
+    - id: sg_notifications
+      name: "Notifications"
+      sorting_weight: 10
+    - id: sg_device
+      name: "Device"
+      sorting_weight: 20
+    - id: sg_actions
+      name: "Actions"
+      sorting_weight: 30
+
+binary_sensor:                 # live connection/call state, curated for at-a-glance HA visibility
+  - platform: ancs
+    ancs_id: my_ancs
+    connected:
+      name: "iPhone Connected"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 10
+    call_active:
+      name: "Call Active"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 20
+
+text_sensor:                   # last-notification text + device identity, curated for HA
+  - platform: ancs
+    ancs_id: my_ancs
+    last_title:
+      name: "Last Notification"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 30
+    last_message:
+      name: "Last Message"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 40
+    last_caller:
+      name: "Last Caller"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 50
+    last_app_id:
+      name: "Last App ID"
+      web_server:
+        sorting_group_id: sg_notifications
+        sorting_weight: 60
+    advertised_name:
+      name: "Advertised Name"
+      entity_category: diagnostic
+      web_server:
+        sorting_group_id: sg_device   # joined by name_suffix (text entity) below
+        sorting_weight: 10
+  - platform: template
+    name: "esphome-ancs Version"
+    entity_category: diagnostic
+    icon: "mdi:tag-outline"
+    lambda: 'return std::string("${ancs_ref}");'   # ${ancs_ref} resolves at compile time to the pinned component release
+    web_server:
+      sorting_group_id: sg_device
+      sorting_weight: 15
+
+text:                          # user-editable BLE name suffix (see ancs: comment above)
+  - platform: ancs
+    ancs_id: my_ancs
+    name: "Device Name Suffix"
+    entity_category: config
+    web_server:
+      sorting_group_id: sg_device
+      sorting_weight: 20
+
+button:                        # bond management — re-pair and connection reset controls
+  - platform: template
+    name: "Clear Bonds (Re-pair)"
+    entity_category: config
+    on_press:
+      - ancs.clear_bonds: my_ancs   # wipes ALL bonds and restarts the device — destructive
+    web_server:
+      sorting_group_id: sg_actions
+      sorting_weight: 10
+  - platform: template
+    name: "Disconnect"
+    entity_category: config
+    on_press:
+      - ancs.disconnect: my_ancs
+    web_server:
+      sorting_group_id: sg_actions
+      sorting_weight: 20
+
 wifi:
   ap:
     ssid: "ANCService Setup"   # named, open AP; the captive portal serves the WiFi setup page
