@@ -92,6 +92,19 @@ ancs:
                 device_name: !lambda 'return std::string(App.get_name());'
                 iphone_name: !lambda 'return device_name;'
 
+web_server:                    # local device page (shares web_server_base with captive_portal)
+  version: 3
+  sorting_groups:
+    - id: sg_notifications
+      name: "Notifications"
+      sorting_weight: 10
+    - id: sg_device
+      name: "Device"
+      sorting_weight: 20
+    - id: sg_actions
+      name: "Actions"
+      sorting_weight: 30
+
 wifi:
   ap:
     ssid: "ANCService Setup"   # named, open AP; the captive portal serves the WiFi setup page
