@@ -149,7 +149,7 @@ text_sensor:                   # last-notification text + device identity, curat
         sorting_group_id: sg_device   # joined by name_suffix (text entity) below
         sorting_weight: 10
   - platform: template
-    name: "esphome-ancs Version"
+    name: "ANCS Library Version"
     entity_category: diagnostic
     icon: "mdi:tag-outline"
     lambda: 'return std::string("${ancs_ref}");'   # ${ancs_ref} resolves at compile time to the pinned component release
