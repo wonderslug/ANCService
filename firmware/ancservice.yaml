@@ -104,6 +104,56 @@ web_server:                    # local device page (shares web_server_base with 
     - id: sg_actions
       name: "Actions"
       sorting_weight: 30
+    - id: sg_system
+      name: "System"
+      sorting_weight: 40
+
+sensor:                        # general device-health diagnostics, curated for HA
+  - platform: uptime
+    name: "Uptime Sensor"
+    id: uptime_sensor
+    entity_category: diagnostic
+    update_interval: 5min        # slow-changing diagnostic; no need to poll at the 60s platform default
+    web_server:
+      sorting_group_id: sg_system
+      sorting_weight: 10
+    on_raw_value:
+      then:
+        - text_sensor.template.publish:
+            id: uptime_human
+            state: !lambda |-
+              int total = (int)round(x);
+              int d = total / 86400;
+              int h = (total % 86400) / 3600;
+              int m = (total % 3600) / 60;
+              int s = total % 60;
+              char result[32] = "";
+              if (d > 0) {
+                snprintf(result + strlen(result), sizeof(result) - strlen(result), "%dd ", d);
+              }
+              if (h > 0) {
+                snprintf(result + strlen(result), sizeof(result) - strlen(result), "%dh ", h);
+              }
+              if (m > 0) {
+                snprintf(result + strlen(result), sizeof(result) - strlen(result), "%dm ", m);
+              }
+              snprintf(result + strlen(result), sizeof(result) - strlen(result), "%ds", s);
+              return std::string(result);
+  - platform: wifi_signal
+    id: wifi_signal_db
+    internal: true               # feeds the percent filter below; not shown as its own entity
+    update_interval: 60s
+  - platform: copy
+    source_id: wifi_signal_db
+    name: "WiFi Signal Percent"
+    entity_category: diagnostic
+    device_class: ""               # overrides copy's inherited signal_strength device_class for plain percent display
+    unit_of_measurement: "%"
+    filters:
+      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);   # maps -100..0 dBm linearly to 0..100% (clamped)
+    web_server:
+      sorting_group_id: sg_system
+      sorting_weight: 30
 
 binary_sensor:                 # live connection/call state, curated for at-a-glance HA visibility
   - platform: ancs
@@ -149,13 +199,35 @@ text_sensor:                   # last-notification text + device identity, curat
         sorting_group_id: sg_device   # joined by name_suffix (text entity) below
         sorting_weight: 10
   - platform: template
-    name: "esphome-ancs Version"
+    name: "ANCS Library Version"
     entity_category: diagnostic
     icon: "mdi:tag-outline"
     lambda: 'return std::string("${ancs_ref}");'   # ${ancs_ref} resolves at compile time to the pinned component release
     web_server:
       sorting_group_id: sg_device
       sorting_weight: 15
+  - platform: template
+    name: "Uptime"          # populated by uptime_sensor's on_raw_value lambda above
+    id: uptime_human
+    entity_category: diagnostic
+    icon: "mdi:clock-start"
+    web_server:
+      sorting_group_id: sg_system
+      sorting_weight: 20
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true
+    entity_category: diagnostic
+    web_server:
+      sorting_group_id: sg_system
+      sorting_weight: 40
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+      entity_category: diagnostic
+      web_server:
+        sorting_group_id: sg_system
+        sorting_weight: 50
 
 text:                          # user-editable BLE name suffix (see ancs: comment above)
   - platform: ancs
@@ -166,7 +238,7 @@ text:                          # user-editable BLE name suffix (see ancs: commen
       sorting_group_id: sg_device
       sorting_weight: 20
 
-button:                        # bond management — re-pair and connection reset controls
+button:                        # device actions — bond management, connection reset, and restart
   - platform: template
     name: "Clear Bonds (Re-pair)"
     entity_category: config
@@ -183,6 +255,12 @@ button:                        # bond management — re-pair and connection rese
     web_server:
       sorting_group_id: sg_actions
       sorting_weight: 20
+  - platform: restart
+    name: "Restart"
+    entity_category: config
+    web_server:
+      sorting_group_id: sg_actions
+      sorting_weight: 30
 
 wifi:
   ap:
