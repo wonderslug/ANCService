@@ -139,6 +139,21 @@ sensor:                        # general device-health diagnostics, curated for 
               }
               snprintf(result + strlen(result), sizeof(result) - strlen(result), "%ds", s);
               return std::string(result);
+  - platform: wifi_signal
+    id: wifi_signal_db
+    internal: true               # feeds the percent filter below; not shown as its own entity
+    update_interval: 60s
+  - platform: copy
+    source_id: wifi_signal_db
+    name: "WiFi Signal Percent"
+    entity_category: diagnostic
+    device_class: ""               # overrides copy's inherited signal_strength device_class for plain percent display
+    unit_of_measurement: "%"
+    filters:
+      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);   # maps -100..0 dBm linearly to 0..100% (clamped)
+    web_server:
+      sorting_group_id: sg_system
+      sorting_weight: 30
 
 binary_sensor:                 # live connection/call state, curated for at-a-glance HA visibility
   - platform: ancs
@@ -199,6 +214,20 @@ text_sensor:                   # last-notification text + device identity, curat
     web_server:
       sorting_group_id: sg_system
       sorting_weight: 20
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true
+    entity_category: diagnostic
+    web_server:
+      sorting_group_id: sg_system
+      sorting_weight: 40
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+      entity_category: diagnostic
+      web_server:
+        sorting_group_id: sg_system
+        sorting_weight: 50
 
 text:                          # user-editable BLE name suffix (see ancs: comment above)
   - platform: ancs
