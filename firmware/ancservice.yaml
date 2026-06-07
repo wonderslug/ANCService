@@ -28,7 +28,10 @@ logger:
 
 ancs:
   id: my_ancs
-  name: "ANCService"
+  # No explicit name: the BLE advertised name defaults to the node name, which
+  # carries the per-device MAC suffix (name_add_mac_suffix above) -> e.g.
+  # "ancservice-a1b2c3". Unique per unit, so multiple devices are distinguishable
+  # in a BLE scanner during pairing. (esphome-ancs >= v1.1.2.)
   auto_fetch_attributes: true
   fetch_attributes: [app_id, title, subtitle, message, date]
   on_notification_attributes:
