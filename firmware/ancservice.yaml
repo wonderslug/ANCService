@@ -238,7 +238,7 @@ text:                          # user-editable BLE name suffix (see ancs: commen
       sorting_group_id: sg_device
       sorting_weight: 20
 
-button:                        # bond management — re-pair and connection reset controls
+button:                        # device actions — bond management, connection reset, and restart
   - platform: template
     name: "Clear Bonds (Re-pair)"
     entity_category: config
@@ -255,6 +255,12 @@ button:                        # bond management — re-pair and connection rese
     web_server:
       sorting_group_id: sg_actions
       sorting_weight: 20
+  - platform: restart
+    name: "Restart"
+    entity_category: config
+    web_server:
+      sorting_group_id: sg_actions
+      sorting_weight: 30
 
 wifi:
   ap:
