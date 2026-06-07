@@ -146,8 +146,35 @@ text_sensor:                   # last-notification text + device identity, curat
       name: "Advertised Name"
       entity_category: diagnostic
       web_server:
-        sorting_group_id: sg_device   # joined by name_suffix (text entity) in the next commit
+        sorting_group_id: sg_device   # joined by name_suffix (text entity) below
         sorting_weight: 10
+
+text:                          # user-editable BLE name suffix (see ancs: comment above)
+  - platform: ancs
+    ancs_id: my_ancs
+    name: "Device Name Suffix"
+    entity_category: config
+    web_server:
+      sorting_group_id: sg_device
+      sorting_weight: 20
+
+button:                        # bond management — re-pair and connection reset controls
+  - platform: template
+    name: "Clear Bonds (Re-pair)"
+    entity_category: config
+    on_press:
+      - ancs.clear_bonds: my_ancs   # wipes ALL bonds and restarts the device — destructive
+    web_server:
+      sorting_group_id: sg_actions
+      sorting_weight: 10
+  - platform: template
+    name: "Disconnect"
+    entity_category: config
+    on_press:
+      - ancs.disconnect: my_ancs
+    web_server:
+      sorting_group_id: sg_actions
+      sorting_weight: 20
 
 wifi:
   ap:
