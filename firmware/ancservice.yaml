@@ -26,6 +26,8 @@ external_components:
 
 logger:
 
+http_request:                  # outbound webhook delivery (used by the ancs: automations below)
+
 ancs:
   id: my_ancs
   # No explicit name: the BLE advertised name defaults to the node name, which
@@ -60,6 +62,21 @@ ancs:
                 date: !lambda 'return date;'
                 device_name: !lambda 'return std::string(App.get_name());'
                 iphone_name: !lambda 'return device_name;'
+          - if:
+              condition:
+                lambda: 'return id(webhooks_enabled).state && !id(webhook_url_incoming_call).state.empty();'
+              then:
+                - http_request.post:
+                    url: !lambda 'return id(webhook_url_incoming_call).state;'
+                    request_headers:
+                      Content-Type: application/json
+                    json:
+                      uid: !lambda 'return std::to_string(uid);'
+                      caller: !lambda 'return title;'
+                      app_id: !lambda 'return app_id;'
+                      date: !lambda 'return date;'
+                      device_name: !lambda 'return std::string(App.get_name());'
+                      iphone_name: !lambda 'return device_name;'
         else:
           - homeassistant.event:
               event: esphome.ancs_notification
@@ -73,6 +90,24 @@ ancs:
                 date: !lambda 'return date;'
                 device_name: !lambda 'return std::string(App.get_name());'
                 iphone_name: !lambda 'return device_name;'
+          - if:
+              condition:
+                lambda: 'return id(webhooks_enabled).state && !id(webhook_url_notification).state.empty();'
+              then:
+                - http_request.post:
+                    url: !lambda 'return id(webhook_url_notification).state;'
+                    request_headers:
+                      Content-Type: application/json
+                    json:
+                      uid: !lambda 'return std::to_string(uid);'
+                      category: !lambda 'return category;'
+                      app_id: !lambda 'return app_id;'
+                      title: !lambda 'return title;'
+                      subtitle: !lambda 'return subtitle;'
+                      message: !lambda 'return message;'
+                      date: !lambda 'return date;'
+                      device_name: !lambda 'return std::string(App.get_name());'
+                      iphone_name: !lambda 'return device_name;'
   on_notification_removed:
     - logger.log:
         format: "REMOVED   uid=%u  dev=%-16s  cat=%-16s"
@@ -91,6 +126,18 @@ ancs:
                 uid: !lambda 'return std::to_string(uid);'
                 device_name: !lambda 'return std::string(App.get_name());'
                 iphone_name: !lambda 'return device_name;'
+          - if:
+              condition:
+                lambda: 'return id(webhooks_enabled).state && !id(webhook_url_call_ended).state.empty();'
+              then:
+                - http_request.post:
+                    url: !lambda 'return id(webhook_url_call_ended).state;'
+                    request_headers:
+                      Content-Type: application/json
+                    json:
+                      uid: !lambda 'return std::to_string(uid);'
+                      device_name: !lambda 'return std::string(App.get_name());'
+                      iphone_name: !lambda 'return device_name;'
 
 web_server:                    # local device page (shares web_server_base with captive_portal)
   version: 3
@@ -107,6 +154,9 @@ web_server:                    # local device page (shares web_server_base with 
     - id: sg_system
       name: "System"
       sorting_weight: 40
+    - id: sg_webhooks
+      name: "Webhooks"
+      sorting_weight: 50
 
 sensor:                        # general device-health diagnostics, curated for HA
   - platform: uptime
@@ -229,7 +279,7 @@ text_sensor:                   # last-notification text + device identity, curat
         sorting_group_id: sg_system
         sorting_weight: 50
 
-text:                          # user-editable BLE name suffix (see ancs: comment above)
+text:                          # user-editable BLE name suffix (see ancs: comment above), webhook URLs
   - platform: ancs
     ancs_id: my_ancs
     name: "Device Name Suffix"
@@ -237,6 +287,47 @@ text:                          # user-editable BLE name suffix (see ancs: commen
     web_server:
       sorting_group_id: sg_device
       sorting_weight: 20
+  - platform: template
+    name: "Notification Webhook URL"
+    id: webhook_url_notification
+    entity_category: config
+    mode: text
+    optimistic: true
+    restore_value: true
+    web_server:
+      sorting_group_id: sg_webhooks
+      sorting_weight: 20
+  - platform: template
+    name: "Incoming Call Webhook URL"
+    id: webhook_url_incoming_call
+    entity_category: config
+    mode: text
+    optimistic: true
+    restore_value: true
+    web_server:
+      sorting_group_id: sg_webhooks
+      sorting_weight: 30
+  - platform: template
+    name: "Call Ended Webhook URL"
+    id: webhook_url_call_ended
+    entity_category: config
+    mode: text
+    optimistic: true
+    restore_value: true
+    web_server:
+      sorting_group_id: sg_webhooks
+      sorting_weight: 40
+
+switch:                        # master webhook-delivery toggle — gates all webhook posts below
+  - platform: template
+    name: "Webhooks Enabled"
+    id: webhooks_enabled
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    web_server:
+      sorting_group_id: sg_webhooks
+      sorting_weight: 10
 
 button:                        # device actions — bond management, connection reset, and restart
   - platform: template
