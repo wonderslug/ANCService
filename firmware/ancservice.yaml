@@ -104,6 +104,41 @@ web_server:                    # local device page (shares web_server_base with 
     - id: sg_actions
       name: "Actions"
       sorting_weight: 30
+    - id: sg_system
+      name: "System"
+      sorting_weight: 40
+
+sensor:                        # general device-health diagnostics, curated for HA
+  - platform: uptime
+    name: "Uptime Sensor"
+    id: uptime_sensor
+    entity_category: diagnostic
+    update_interval: 5min        # slow-changing diagnostic; no need to poll at the 60s platform default
+    web_server:
+      sorting_group_id: sg_system
+      sorting_weight: 10
+    on_raw_value:
+      then:
+        - text_sensor.template.publish:
+            id: uptime_human
+            state: !lambda |-
+              int total = (int)round(x);
+              int d = total / 86400;
+              int h = (total % 86400) / 3600;
+              int m = (total % 3600) / 60;
+              int s = total % 60;
+              char result[32] = "";
+              if (d > 0) {
+                snprintf(result + strlen(result), sizeof(result) - strlen(result), "%dd ", d);
+              }
+              if (h > 0) {
+                snprintf(result + strlen(result), sizeof(result) - strlen(result), "%dh ", h);
+              }
+              if (m > 0) {
+                snprintf(result + strlen(result), sizeof(result) - strlen(result), "%dm ", m);
+              }
+              snprintf(result + strlen(result), sizeof(result) - strlen(result), "%ds", s);
+              return std::string(result);
 
 binary_sensor:                 # live connection/call state, curated for at-a-glance HA visibility
   - platform: ancs
@@ -156,6 +191,14 @@ text_sensor:                   # last-notification text + device identity, curat
     web_server:
       sorting_group_id: sg_device
       sorting_weight: 15
+  - platform: template
+    name: "Uptime"          # populated by uptime_sensor's on_raw_value lambda above
+    id: uptime_human
+    entity_category: diagnostic
+    icon: "mdi:clock-start"
+    web_server:
+      sorting_group_id: sg_system
+      sorting_weight: 20
 
 text:                          # user-editable BLE name suffix (see ancs: comment above)
   - platform: ancs
