@@ -38,3 +38,40 @@ web_server:
     - id: sg_mqtt
       name: "MQTT"
       sorting_weight: 60
+
+ancs:
+  on_notification_attributes:
+    - if:
+        condition:
+          lambda: 'return id(mqtt_enabled).state;'
+        then:
+          - if:
+              condition:
+                lambda: 'return category == "incoming_call";'
+              then:
+                - mqtt.publish_json:
+                    topic: !lambda 'return "ancservice/" + std::string(App.get_name()) + "/incoming_call";'
+                    payload: |-
+                      root["uid"] = std::to_string(uid);
+                      root["caller"] = title;
+                      root["app_id"] = app_id;
+                      root["date"] = date;
+                      root["device_name"] = std::string(App.get_name());
+                      root["iphone_name"] = device_name;
+                    qos: 0
+                    retain: false
+              else:
+                - mqtt.publish_json:
+                    topic: !lambda 'return "ancservice/" + std::string(App.get_name()) + "/notification";'
+                    payload: |-
+                      root["uid"] = std::to_string(uid);
+                      root["category"] = category;
+                      root["app_id"] = app_id;
+                      root["title"] = title;
+                      root["subtitle"] = subtitle;
+                      root["message"] = message;
+                      root["date"] = date;
+                      root["device_name"] = std::string(App.get_name());
+                      root["iphone_name"] = device_name;
+                    qos: 0
+                    retain: false
