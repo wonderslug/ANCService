@@ -75,3 +75,16 @@ ancs:
                       root["iphone_name"] = device_name;
                     qos: 0
                     retain: false
+  on_notification_removed:
+    - if:
+        condition:
+          lambda: 'return id(mqtt_enabled).state && category == "incoming_call";'
+        then:
+          - mqtt.publish_json:
+              topic: !lambda 'return "ancservice/" + std::string(App.get_name()) + "/call_ended";'
+              payload: |-
+                root["uid"] = std::to_string(uid);
+                root["device_name"] = std::string(App.get_name());
+                root["iphone_name"] = device_name;
+              qos: 0
+              retain: false
