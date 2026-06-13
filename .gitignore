@@ -20,3 +20,6 @@ site/dev/
 
 # Brainstorming/spec/plan docs kept local only (not tracked)
 docs/superpowers/
+
+# Brainstorming visual-companion scratch (local-only)
+.superpowers/
