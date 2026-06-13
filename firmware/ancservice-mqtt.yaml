@@ -1,0 +1,90 @@
+# ANCService — MQTT event delivery variant (advanced / build-your-own).
+#
+# This is NOT part of the officially distributed firmware — it requires your own
+# MQTT broker and your own secrets.yaml (gitignored; never commit it). Edit the
+# `mqtt:` block below with your broker's details, add `mqtt_password` to your
+# local secrets.yaml, then build and flash this file directly:
+#
+#   esphome run firmware/ancservice-mqtt.yaml
+#
+# See https://esphome.io/components/mqtt/ for the full set of broker options
+# (TLS, custom ports, discovery, etc.) beyond the minimal setup below.
+packages:
+  base: !include ancservice.yaml
+
+esp32:
+  board: esp32dev          # EDIT ME if targeting a different chip — see firmware/boards/ for reference board IDs
+  framework:
+    type: esp-idf
+
+mqtt:
+  broker: 192.168.1.10     # EDIT ME — your broker's host/IP
+  username: ancservice     # EDIT ME — your broker username (delete this line if your broker allows anonymous connections)
+  password: !secret mqtt_password   # add `mqtt_password: "yourpassword"` to your own (gitignored) secrets.yaml — never commit real credentials
+
+switch:
+  - platform: template
+    name: "MQTT Enabled"
+    id: mqtt_enabled
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    web_server:
+      sorting_group_id: sg_mqtt
+      sorting_weight: 10
+
+web_server:
+  sorting_groups:
+    - id: sg_mqtt
+      name: "MQTT"
+      sorting_weight: 60
+
+ancs:
+  on_notification_attributes:
+    - if:
+        condition:
+          lambda: 'return id(mqtt_enabled).state;'
+        then:
+          - if:
+              condition:
+                lambda: 'return category == "incoming_call";'
+              then:
+                - mqtt.publish_json:
+                    topic: !lambda 'return "ancservice/" + std::string(App.get_name()) + "/incoming_call";'
+                    payload: |-
+                      root["uid"] = std::to_string(uid);
+                      root["caller"] = title;
+                      root["app_id"] = app_id;
+                      root["date"] = date;
+                      root["device_name"] = std::string(App.get_name());
+                      root["iphone_name"] = device_name;
+                    qos: 0
+                    retain: false
+              else:
+                - mqtt.publish_json:
+                    topic: !lambda 'return "ancservice/" + std::string(App.get_name()) + "/notification";'
+                    payload: |-
+                      root["uid"] = std::to_string(uid);
+                      root["category"] = category;
+                      root["app_id"] = app_id;
+                      root["title"] = title;
+                      root["subtitle"] = subtitle;
+                      root["message"] = message;
+                      root["date"] = date;
+                      root["device_name"] = std::string(App.get_name());
+                      root["iphone_name"] = device_name;
+                    qos: 0
+                    retain: false
+  on_notification_removed:
+    - if:
+        condition:
+          lambda: 'return id(mqtt_enabled).state && category == "incoming_call";'
+        then:
+          - mqtt.publish_json:
+              topic: !lambda 'return "ancservice/" + std::string(App.get_name()) + "/call_ended";'
+              payload: |-
+                root["uid"] = std::to_string(uid);
+                root["device_name"] = std::string(App.get_name());
+                root["iphone_name"] = device_name;
+              qos: 0
+              retain: false

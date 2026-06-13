@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MQTT Delivery — ANCService</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>MQTT Delivery</h1>
+      <p class="pitch">
+        Publish your iPhone's notification and call events straight to MQTT topics
+        on your own broker — no Home Assistant or webhook receiver required. This
+        is an advanced, build-your-own-firmware path: here's what it involves, what
+        the payloads look like, and how to set it up.
+      </p>
+
+      <section class="step">
+        <h2>What &amp; why — and the catch</h2>
+        <p>
+          ANCService already delivers notification and call events to Home Assistant
+          as <code>homeassistant.event</code> actions, and can send the same data as
+          JSON webhooks. <strong>MQTT delivery</strong> is a third path: the device
+          publishes the same event data as JSON messages directly to topics on an
+          MQTT broker — useful if you already run a broker (standalone, or as part of
+          Home Assistant) and want native topic-based integration, MQTT discovery, or
+          to feed the data into existing MQTT-based automations.
+        </p>
+        <p>
+          <strong>The catch:</strong> unlike webhooks, this isn't a toggle you can
+          flip in the curated app. ESPHome's MQTT client needs to know your broker's
+          address at <em>build time</em> — it can't be configured later from the web
+          UI or Home Assistant. So MQTT support ships as a separate firmware variant,
+          <code>firmware/ancservice-mqtt.yaml</code>, that you build and flash
+          yourself with your broker details filled in. If that sounds like more than
+          you want to take on, webhook delivery covers the "I don't run Home
+          Assistant" use case with zero building required — see the
+          <a href="webhooks.html">webhook delivery guide</a>.
+        </p>
+      </section>
+
+      <section class="step">
+        <h2>How to build it</h2>
+        <p>Building the MQTT variant means compiling and flashing your own firmware:</p>
+        <ol>
+          <li>Clone the <a href="https://github.com/wonderslug/ANCService">ANCService repo</a>.</li>
+          <li>
+            Open <code>firmware/ancservice-mqtt.yaml</code> and edit the
+            <code>mqtt:</code> block — fill in your broker's host/IP and username
+            where marked <code>EDIT ME</code>.
+          </li>
+          <li>
+            Add your broker password to your own <code>secrets.yaml</code> (create one
+            in the <code>firmware/</code> directory if you don't have one — it's
+            gitignored, so it stays local and is never committed):
+            <pre><code>mqtt_password: "yourpassword"</code></pre>
+          </li>
+          <li>
+            Compile and flash with <a href="https://esphome.io/">ESPHome</a>:
+            <pre><code>esphome run firmware/ancservice-mqtt.yaml</code></pre>
+          </li>
+        </ol>
+        <p>
+          New to ESPHome's build/flash process? Its
+          <a href="https://esphome.io/guides/getting_started_command_line.html">getting started guide</a>
+          covers the basics. For the full set of broker options this minimal setup
+          doesn't expose — TLS, custom ports, Home Assistant MQTT discovery, and
+          more — see <a href="https://esphome.io/components/mqtt/">ESPHome's
+          <code>mqtt:</code> component reference</a>.
+        </p>
+      </section>
+
+      <section class="step">
+        <h2>Runtime control</h2>
+        <p>
+          Once flashed, MQTT delivery is controlled by a single switch — grouped
+          under <strong>MQTT</strong> on the device's local web page (browse to its
+          IP address) and under <strong>Configuration</strong> in Home Assistant:
+        </p>
+        <ul>
+          <li><strong>MQTT Enabled</strong> — a master switch. Off by default; nothing publishes until you turn it on. There's no per-event-type control — it's all three event types together, or none.</li>
+        </ul>
+      </section>
+
+      <section class="step">
+        <h2>Payload &amp; topic reference</h2>
+        <p>
+          Each event publishes a JSON message (QoS 0, not retained) to a fixed topic
+          derived from your device's name, mirroring the same fields sent to Home
+          Assistant and webhooks for that event:
+        </p>
+        <table class="events">
+          <thead>
+            <tr><th>Topic</th><th>Fields</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>ancservice/&lt;device&gt;/notification</code></td>
+              <td><code>uid</code>, <code>category</code>, <code>app_id</code>, <code>title</code>, <code>subtitle</code>, <code>message</code>, <code>date</code>, <code>device_name</code>, <code>iphone_name</code></td>
+            </tr>
+            <tr>
+              <td><code>ancservice/&lt;device&gt;/incoming_call</code></td>
+              <td><code>uid</code>, <code>caller</code>, <code>app_id</code>, <code>date</code>, <code>device_name</code>, <code>iphone_name</code></td>
+            </tr>
+            <tr>
+              <td><code>ancservice/&lt;device&gt;/call_ended</code></td>
+              <td><code>uid</code>, <code>device_name</code>, <code>iphone_name</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          <code>&lt;device&gt;</code> is your device's full name, including its MAC
+          suffix (e.g. <code>ancservice-a1b2c3</code>) — the same identity used as
+          the <code>device_name</code> field inside the payloads themselves, so
+          topics and payload contents stay consistent.
+        </p>
+        <p>Example — an incoming-call message on <code>ancservice/ancservice-a1b2c3/incoming_call</code>:</p>
+        <pre><code>{
+  "uid": "1234",
+  "caller": "Jane Appleseed",
+  "app_id": "com.apple.mobilephone",
+  "date": "2026-06-07T14:32:00Z",
+  "device_name": "ancservice-a1b2c3",
+  "iphone_name": "Jane's iPhone"
+}</code></pre>
+        <details class="help">
+          <summary>Example — a regular notification message</summary>
+          <pre><code>{
+  "uid": "5678",
+  "category": "other",
+  "app_id": "com.apple.MobileSMS",
+  "title": "Jane Appleseed",
+  "subtitle": "",
+  "message": "Running 5 minutes late!",
+  "date": "2026-06-07T14:35:00Z",
+  "device_name": "ancservice-a1b2c3",
+  "iphone_name": "Jane's iPhone"
+}</code></pre>
+        </details>
+        <details class="help">
+          <summary>Example — a call-ended message</summary>
+          <pre><code>{
+  "uid": "1234",
+  "device_name": "ancservice-a1b2c3",
+  "iphone_name": "Jane's iPhone"
+}</code></pre>
+        </details>
+      </section>
+
+      <section class="step">
+        <h2>Troubleshooting</h2>
+        <p>Nothing arriving? Work through this checklist:</p>
+        <ol>
+          <li>Is <strong>MQTT Enabled</strong> switched on?</li>
+          <li>
+            Check the device logs (ESPHome dashboard &rarr; device &rarr; <strong>Logs</strong>,
+            or the local web page's log stream) for <code>mqtt</code> entries —
+            connection failures (wrong broker address, bad credentials, network
+            issues) are logged there as the client attempts to connect.
+          </li>
+          <li>
+            Confirm your broker details in <code>firmware/ancservice-mqtt.yaml</code>
+            and <code>secrets.yaml</code> are correct, then rebuild and reflash —
+            remember, broker settings are baked in at build time and can't be changed
+            from the web UI afterward.
+          </li>
+          <li>
+            Subscribe directly with a tool like
+            <a href="https://mosquitto.org/man/mosquitto_sub-1.html"><code>mosquitto_sub</code></a>
+            to confirm messages are arriving at the broker:
+            <pre><code>mosquitto_sub -h yourbroker -t 'ancservice/#' -v</code></pre>
+          </li>
+        </ol>
+      </section>
+
+      <p class="links">
+        <a href="index.html">&larr; Back to the quickstart</a>
+      </p>
+    </main>
+  </body>
+</html>
