@@ -28,7 +28,7 @@ component for the quick-start crowd. ANCService is the batteries-included layer 
 | 3 | **Ready-to-go entities** — curated, pre-wired sensors and buttons for the ANCS services | ✅ Shipped (`v0.4.0`) | `docs/superpowers/specs/2026-06-06-ready-to-go-entities-design.md` |
 | 4 | **Event delivery** — outbound webhooks and MQTT topic publication beyond HA API events | ✅ Shipped (webhooks + MQTT) | `docs/superpowers/specs/2026-06-07-event-delivery-webhooks-design.md`, `…-mqtt-design.md` |
 | 5 | **Configuration web interface** — on-device settings UI | ➡️ Folded into #6 (a styled Settings panel; ESPHome can't add real pages) | — |
-| 6 | **Web UI, styling & per-phone repeater** — custom on-device front-end (themed Dashboard + Settings panel) replacing the stock web page, plus the stylized per-phone notification/call **repeater** addressable by `?iphone=` URL, with user-themable CSS | 🛠️ Spec written | `docs/superpowers/specs/2026-06-13-web-ui-styling-repeater-design.md` |
+| 6 | **Web UI, styling & per-phone repeater** — custom on-device front-end (themed Dashboard + Settings panel) replacing the stock web page, plus the stylized per-phone notification/call **repeater** addressable by `?iphone=` URL, with user-themable CSS | 🛠️ In progress — Stage A+B (per-phone repeater + feed channel + query-string theming) implemented; Stage C/D (dashboard theme, settings panel, extensibility) to follow | `docs/superpowers/specs/2026-06-13-web-ui-styling-repeater-design.md` |
 
 Legend: ✅ shipped · 🛠️ in progress · ⏭️ next · ◻️ planned
 
