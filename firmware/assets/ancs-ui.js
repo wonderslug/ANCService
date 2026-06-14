@@ -11,15 +11,85 @@
     return { repeater: wantRepeater, iphone: iphone };
   }
 
+  // ---- Pure feed core --------------------------------------------------
+  function parseFeedValue(str) {
+    if (!str) return null;
+    try {
+      var v = JSON.parse(str);
+      return v && typeof v === "object" && v.t ? v : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // store: { phones: Map<phone, Map<uid, notif>>, connected: Set<phone> }
+  function createFeedStore() {
+    return { phones: new Map(), connected: new Set() };
+  }
+
+  function ensurePhone(store, ph) {
+    if (!store.phones.has(ph)) store.phones.set(ph, new Map());
+    return store.phones.get(ph);
+  }
+
+  function applyFeedEvent(store, evt) {
+    if (!evt || !evt.t || evt.ph == null) return store;
+    var ph = evt.ph;
+    switch (evt.t) {
+      case "conn":
+        store.connected.add(ph);
+        ensurePhone(store, ph);
+        break;
+      case "disconn":
+        store.connected.delete(ph);
+        store.phones.delete(ph);
+        break;
+      case "notif":
+        store.connected.add(ph);
+        ensurePhone(store, ph).set(evt.uid, {
+          uid: evt.uid, app: evt.app || "", cat: evt.cat || "",
+          title: evt.title || "", msg: evt.msg || "", ts: evt.ts || 0,
+        });
+        break;
+      case "removed":
+        if (store.phones.has(ph)) store.phones.get(ph).delete(evt.uid);
+        break;
+    }
+    return store;
+  }
+
+  function selectActive(store, ph) {
+    var m = store.phones.get(ph);
+    if (!m) return [];
+    return Array.from(m.values()).sort(function (a, b) { return b.ts - a.ts; });
+  }
+
+  function selectCall(store, ph) {
+    var list = selectActive(store, ph);
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].cat === "incoming_call") return list[i];
+    }
+    return null;
+  }
+
+  function isConnected(store, ph) { return store.connected.has(ph); }
+
+  function knownPhones(store) {
+    var set = new Set(store.connected);
+    store.phones.forEach(function (_m, ph) { set.add(ph); });
+    return Array.from(set);
+  }
+
   var api = {
     parseMode: parseMode,
-    // filled in by later tasks:
-    parseFeedValue: null,
-    createFeedStore: null,
-    applyFeedEvent: null,
-    selectActive: null,
-    selectCall: null,
-    parseTheme: null,
+    parseFeedValue: parseFeedValue,
+    createFeedStore: createFeedStore,
+    applyFeedEvent: applyFeedEvent,
+    selectActive: selectActive,
+    selectCall: selectCall,
+    isConnected: isConnected,
+    knownPhones: knownPhones,
+    parseTheme: null, // Task 6
   };
 
   if (typeof module !== "undefined" && module.exports) {
