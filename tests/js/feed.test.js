@@ -78,3 +78,11 @@ test("parseTheme only accepts known var params (no arbitrary injection)", () => 
   const t = ui.parseTheme("?bg=%23000000&evil=boom");
   assert.deepEqual(t.vars, { "--ancs-bg": "#000000" });
 });
+
+test("formatAgo formats seconds/minutes/hours and clamps negatives", () => {
+  assert.equal(ui.formatAgo(0), "0s ago");
+  assert.equal(ui.formatAgo(5), "5s ago");
+  assert.equal(ui.formatAgo(-3), "0s ago");
+  assert.equal(ui.formatAgo(125), "2m ago");
+  assert.equal(ui.formatAgo(7200), "2h ago");
+});
