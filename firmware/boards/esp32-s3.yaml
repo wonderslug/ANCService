@@ -1,5 +1,6 @@
 packages:
   base: !include ../ancservice.yaml
+  ui: !include ../ui.yaml
 
 esp32:
   board: esp32-s3-devkitc-1

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ANCService — Repeater Display</title>
+</head>
+<body>
+  <h1>Repeater display</h1>
+  <p>The repeater is a full-screen, always-on notification board served by the
+     device itself. Open it in a browser or an iframe on a dedicated display.</p>
+
+  <h2>Open it</h2>
+  <p>Browse to the device and add a query string:</p>
+  <ul>
+    <li><code>http://&lt;device&gt;/?iphone=Brians-iPhone</code> — focus one phone.</li>
+    <li><code>http://&lt;device&gt;/#repeater</code> — show the phone picker.</li>
+  </ul>
+
+  <h2>URL parameters</h2>
+  <ul>
+    <li><code>iphone</code> — the phone name to monitor (from the BLE/ANCS device name).</li>
+    <li><code>theme</code> — a built-in preset: <code>midnight</code>, <code>light</code>, or <code>terminal</code>.</li>
+    <li><code>accent</code> — override the accent color, e.g. <code>accent=%23ff3b30</code>.</li>
+    <li><code>css</code> — URL of an external stylesheet loaded after the base theme for full control.</li>
+  </ul>
+
+  <h2>Theme it with CSS variables</h2>
+  <p>The board is built on these tokens; override them via the <code>css</code> URL
+     or the query params above:</p>
+  <ul>
+    <li><code>--ancs-bg</code> — background.</li>
+    <li><code>--ancs-fg</code> — foreground/text color.</li>
+    <li><code>--ancs-accent</code> — accent (connection dot, call ring).</li>
+    <li><code>--ancs-font</code> — font family.</li>
+    <li><code>--ancs-radius</code> — corner radius.</li>
+  </ul>
+</body>
+</html>

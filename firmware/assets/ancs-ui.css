@@ -1,0 +1,59 @@
+/* ANCService custom web UI — CSS variable token contract + repeater styles.
+   Low specificity so user/query-string overrides win cleanly. */
+:root {
+  --ancs-bg: radial-gradient(120% 120% at 50% 0%, #16233f, #0a0e16 70%);
+  --ancs-bg-disconnected: radial-gradient(120% 120% at 50% 0%, #3f1f2a, #160a0e 70%);
+  --ancs-fg: #ffffff;
+  --ancs-muted: rgba(255, 255, 255, 0.65);
+  --ancs-accent: #34d399;
+  --ancs-accent-off: #fb7185;
+  --ancs-font: -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ancs-radius: 14px;
+}
+
+/* Full-screen overlay mounted only in repeater mode; covers the stock page. */
+#ancs-repeater {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 26px;
+  background: var(--ancs-bg);
+  color: var(--ancs-fg);
+  font-family: var(--ancs-font);
+  box-sizing: border-box;
+}
+#ancs-repeater.ancs-disconnected { background: var(--ancs-bg-disconnected); }
+
+.ancs-top { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+.ancs-top .ancs-status { display: flex; align-items: center; gap: 8px; color: var(--ancs-muted); }
+.ancs-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ancs-accent); box-shadow: 0 0 8px var(--ancs-accent); }
+.ancs-disconnected .ancs-dot { background: var(--ancs-accent-off); box-shadow: none; }
+.ancs-brand { font-weight: 600; letter-spacing: 0.5px; }
+
+.ancs-stage { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 14px; }
+.ancs-app-icon { width: 56px; height: 56px; border-radius: var(--ancs-radius); display: flex; align-items: center; justify-content: center; font-size: 26px; background: rgba(255,255,255,0.14); }
+.ancs-meta { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--ancs-muted); }
+.ancs-title { font-size: 28px; font-weight: 600; line-height: 1.2; max-width: 80%; }
+.ancs-msg { font-size: 18px; color: var(--ancs-muted); max-width: 80%; line-height: 1.4; }
+
+.ancs-foot { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ancs-muted); }
+.ancs-dots { display: flex; gap: 6px; }
+.ancs-dots i { width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: 0.35; }
+.ancs-dots i.on { width: 18px; border-radius: 4px; opacity: 1; }
+
+/* Incoming-call takeover */
+#ancs-repeater.ancs-call .ancs-stage { gap: 22px; }
+.ancs-call .ancs-title { font-size: 44px; }
+.ancs-ring { width: 96px; height: 96px; border-radius: 50%; border: 4px solid var(--ancs-accent); animation: ancs-pulse 1.4s ease-out infinite; }
+@keyframes ancs-pulse { 0% { transform: scale(0.9); opacity: 0.9; } 70% { transform: scale(1.15); opacity: 0; } 100% { opacity: 0; } }
+
+/* Phone picker */
+.ancs-picker { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; }
+.ancs-picker a { color: var(--ancs-fg); text-decoration: none; background: rgba(255,255,255,0.12); border-radius: var(--ancs-radius); padding: 12px 22px; font-size: 18px; }
+
+/* Query-string theme presets (?theme=...) */
+:root[data-ancs-theme="light"] { --ancs-bg: #f4f6fb; --ancs-fg: #10141c; --ancs-muted: rgba(0,0,0,0.55); }
+:root[data-ancs-theme="terminal"] { --ancs-bg: #0a0e14; --ancs-fg: #d6e1ef; --ancs-accent: #5fd38d; --ancs-font: ui-monospace, Menlo, monospace; }
+:root[data-ancs-theme="midnight"] { /* same as default tokens; explicit for clarity */ }

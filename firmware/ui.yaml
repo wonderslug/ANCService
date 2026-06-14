@@ -1,0 +1,42 @@
+# ANCService custom web UI layer.
+# Pulled ONLY by the board wrappers (firmware/boards/*.yaml), NOT by the standalone
+# ancservice.yaml — so the dashboard_import / HA-adopt path stays clean and
+# compilable without these local header/asset files. Paths are relative to the
+# board wrapper's directory (firmware/boards/), which is the top-level config dir
+# when building.
+esphome:
+  includes:
+    - ../ancs_feed.h
+
+ancs:
+  on_notification_attributes:
+    - text_sensor.template.publish:
+        id: notification_feed
+        state: !lambda |-
+          return ancservice::feed_notif_json(uid, device_name, app_id, category,
+                                              title, message, (uint32_t) ::time(nullptr));
+  on_notification_removed:
+    - text_sensor.template.publish:
+        id: notification_feed
+        state: !lambda 'return ancservice::feed_removed_json(uid, device_name);'
+  on_connect:
+    - text_sensor.template.publish:
+        id: notification_feed
+        state: !lambda 'return ancservice::feed_conn_json(device_name, true);'
+  on_disconnect:
+    - text_sensor.template.publish:
+        id: notification_feed
+        state: !lambda 'return ancservice::feed_conn_json(device_name, false);'
+
+text_sensor:
+  - platform: template
+    name: "Notification Feed"
+    id: notification_feed
+    internal: true          # excluded from HA API; surfaced to web_server via include_internal below
+    update_interval: never  # event-driven only; published from the ancs automations above
+
+web_server:
+  include_internal: true       # so the internal notification_feed sensor reaches /events (not the HA API)
+  css_include: ../assets/ancs-ui.css
+  js_include: ../assets/ancs-ui.js
+  compression: gzip            # scalar (gzip|br); embeds compressed assets in flash

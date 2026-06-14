@@ -26,9 +26,9 @@ component for the quick-start crowd. ANCService is the batteries-included layer 
 | 1 | **Distribution core** — reproducible firmware build, CI, tag-driven GitHub Release + Pages web installer, auto stable rebuilds on `esphome-ancs` release, local dev tooling | ✅ Shipped (`v0.1.0`) | `docs/superpowers/specs/2026-06-05-distribution-core-design.md` |
 | 2 | **Onboarding & provisioning** — captive-portal WiFi fallback, baseline HA events, single-page guided quickstart (install → WiFi → Add to HA → pair → use) | ✅ Shipped (`v0.2.0`) | `docs/superpowers/specs/2026-06-05-onboarding-provisioning-design.md` |
 | 3 | **Ready-to-go entities** — curated, pre-wired sensors and buttons for the ANCS services | ✅ Shipped (`v0.4.0`) | `docs/superpowers/specs/2026-06-06-ready-to-go-entities-design.md` |
-| 4 | **Event delivery** — MQTT topic publication and/or outbound webhooks beyond HA API events | ⏭️ Next | _tbd_ |
-| 5 | **Configuration web interface** — on-device settings UI | ◻️ Planned | _tbd_ |
-| 6 | **Notification display ("repeater") screens** — stylized per-phone notification/call display addressable by direct URL | ◻️ Future (architectural constraint to keep in mind now) | _tbd_ |
+| 4 | **Event delivery** — outbound webhooks and MQTT topic publication beyond HA API events | ✅ Shipped (webhooks + MQTT) | `docs/superpowers/specs/2026-06-07-event-delivery-webhooks-design.md`, `…-mqtt-design.md` |
+| 5 | **Configuration web interface** — on-device settings UI | ➡️ Folded into #6 (a styled Settings panel; ESPHome can't add real pages) | — |
+| 6 | **Web UI, styling & per-phone repeater** — custom on-device front-end (themed Dashboard + Settings panel) replacing the stock web page, plus the stylized per-phone notification/call **repeater** addressable by `?iphone=` URL, with user-themable CSS | 🛠️ In progress — Stage A+B (per-phone repeater + feed channel + query-string theming) implemented; Stage C/D (dashboard theme, settings panel, extensibility) to follow | `docs/superpowers/specs/2026-06-13-web-ui-styling-repeater-design.md` |
 
 Legend: ✅ shipped · 🛠️ in progress · ⏭️ next · ◻️ planned
 
@@ -68,9 +68,11 @@ both repos.
 - **#2 provisioning** replaces the minimal `wifi: ap: {}` with a real captive-portal
   fallback and an Add-to-HA landing experience. `dashboard_import:` already lays the
   groundwork for HA discovery + the adopt flow.
-- **#6 repeater screens** are explicitly later, but the per-phone, URL-addressable display
-  model is a constraint to keep in mind while designing #3–#5 so we don't paint into a
-  corner.
+- **#6 web UI / repeater** is now in design (spec written 2026-06-13). It absorbs the former
+  #5 settings UI as a styled Settings panel, since ESPHome's web_server cannot register custom
+  pages/routes — the whole experience is a custom front-end bundle (`css_include`/`js_include`)
+  mounted over the stock page, kept same-origin and on-device, with graceful fallback to the
+  stock UI. The per-phone repeater is addressable by `?iphone=` and user-themable via CSS.
 
 ---
 
