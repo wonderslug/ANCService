@@ -59,3 +59,22 @@ test("knownPhones lists phones that are connected or have notifications", () => 
   ui.applyFeedEvent(s, { t: "notif", ph: "B", uid: 1, ts: 1, title: "x", msg: "", cat: "social" });
   assert.deepEqual(ui.knownPhones(s).sort(), ["A", "B"]);
 });
+
+test("parseTheme reads preset, accent, and css url", () => {
+  const t = ui.parseTheme("?iphone=A&theme=midnight&accent=%23ff3b30&css=https://x/y.css");
+  assert.equal(t.preset, "midnight");
+  assert.deepEqual(t.vars, { "--ancs-accent": "#ff3b30" });
+  assert.equal(t.css, "https://x/y.css");
+});
+
+test("parseTheme returns empty pieces when absent", () => {
+  const t = ui.parseTheme("?iphone=A");
+  assert.equal(t.preset, null);
+  assert.deepEqual(t.vars, {});
+  assert.equal(t.css, null);
+});
+
+test("parseTheme only accepts known var params (no arbitrary injection)", () => {
+  const t = ui.parseTheme("?bg=%23000000&evil=boom");
+  assert.deepEqual(t.vars, { "--ancs-bg": "#000000" });
+});

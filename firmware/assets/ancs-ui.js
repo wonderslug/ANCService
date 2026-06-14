@@ -80,6 +80,25 @@
     return Array.from(set);
   }
 
+  // Whitelist of query params that map to CSS variables (prevents arbitrary
+  // property injection). Values are CSS color/length strings.
+  var THEME_VARS = {
+    accent: "--ancs-accent",
+    bg: "--ancs-bg",
+    fg: "--ancs-fg",
+    font: "--ancs-font",
+    radius: "--ancs-radius",
+  };
+
+  function parseTheme(search) {
+    var p = new URLSearchParams(search || "");
+    var vars = {};
+    Object.keys(THEME_VARS).forEach(function (k) {
+      if (p.has(k)) vars[THEME_VARS[k]] = p.get(k);
+    });
+    return { preset: p.get("theme"), vars: vars, css: p.get("css") };
+  }
+
   // ---- Repeater app (browser only) ------------------------------------
   var FEED_ID_MATCH = "notification_feed"; // web_server entity id is text_sensor-notification_feed
   var CYCLE_MS = 6000;
@@ -109,11 +128,25 @@
     return n;
   }
 
+  function applyTheme(theme) {
+    if (theme.preset) document.documentElement.setAttribute("data-ancs-theme", theme.preset);
+    Object.keys(theme.vars).forEach(function (cssVar) {
+      document.documentElement.style.setProperty(cssVar, theme.vars[cssVar]);
+    });
+    if (theme.css) {
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = theme.css; // loaded AFTER the base sheet so user rules win
+      document.head.appendChild(link);
+    }
+  }
+
   function bootRepeater(mode) {
     var store = createFeedStore();
     var root = el("div");
     root.id = "ancs-repeater";
     document.body.appendChild(root);
+    applyTheme(parseTheme(location.search));
 
     var cycleIndex = 0;
     var phone = mode.iphone;
@@ -258,7 +291,7 @@
     selectCall: selectCall,
     isConnected: isConnected,
     knownPhones: knownPhones,
-    parseTheme: null, // Task 6
+    parseTheme: parseTheme,
   };
 
   if (typeof module !== "undefined" && module.exports) {

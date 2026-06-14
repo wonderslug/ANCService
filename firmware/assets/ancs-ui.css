@@ -52,3 +52,8 @@
 /* Phone picker */
 .ancs-picker { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; }
 .ancs-picker a { color: var(--ancs-fg); text-decoration: none; background: rgba(255,255,255,0.12); border-radius: var(--ancs-radius); padding: 12px 22px; font-size: 18px; }
+
+/* Query-string theme presets (?theme=...) */
+:root[data-ancs-theme="light"] { --ancs-bg: #f4f6fb; --ancs-fg: #10141c; --ancs-muted: rgba(0,0,0,0.55); }
+:root[data-ancs-theme="terminal"] { --ancs-bg: #0a0e14; --ancs-fg: #d6e1ef; --ancs-accent: #5fd38d; --ancs-font: ui-monospace, Menlo, monospace; }
+:root[data-ancs-theme="midnight"] { /* same as default tokens; explicit for clarity */ }
