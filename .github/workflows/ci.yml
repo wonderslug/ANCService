@@ -35,4 +35,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: node --test "tests/js/**/*.test.js"
+      - run: node --test tests/js/*.test.js   # shell-expanded glob (node --test glob patterns need Node 21+)
